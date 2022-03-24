@@ -1,4 +1,4 @@
-//// Creating the server ////
+/***** Creating the server *****/
 // Define named constants
 const START_ARG_NUM = 2
 const EXIT_SUCCESS = 0
@@ -37,9 +37,6 @@ if (allArguments['help']) {
 // Make this const default to port 3000 if there is no argument given for `--port`.
 const port = allArguments['port'] || process.env.PORT || DEFAULT_PORT
 
-// Import the coinFlips and countFlips functions from your coin.mjs file
-const coin = require('./coin.js')
-
 // Require Express.js
 const express = require('express')
 const app = express()
@@ -49,8 +46,16 @@ const server = app.listen(port, () => {
     console.log('App listening on port %PORT%'.replace('%PORT%', port))
 })
 
-//// API endpoints ////
-// Check endpoint
+// Require coin and database SCRIPT files
+const coin = require('./coin.js')
+const db = require("./database.js")
+
+// Make Express use its own built-in body parser for both urlencoded and JSON body data.
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+/***** API endpoints *****/
+//// Check endpoint ////
 app.get('/app/', (req, res) => {
     // Respond with status 200
     res.statusCode = 200
@@ -60,6 +65,7 @@ app.get('/app/', (req, res) => {
     res.end(res.statusCode+ ' ' +res.statusMessage)
 });
 
+//// Coin-flipping ////
 // One flip
 app.get('/app/flip', (req, res) => {
     var flip = coin.coinFlip()
@@ -89,7 +95,65 @@ app.get('/app/flip/call/tails', (req, res) => {
     res.status(HTTP_STATUS_OK).json(coin.flipACoin(TAILS))
 })
 
-// Default response for any request not addressed by the defined endpoints
-app.use(function (req, res) {
-    res.status(HTTP_STATUS_NOT_FOUND).send('404 NOT FOUND')
+//// Logging ////
+// CREATE a new user (HTTP method POST) at endpoint /app/new/
+app.post("/app/new/user", (req, res, next) => {
+    let data = {
+        user: req.body.username,
+        pass: req.body.password
+    }
+    const stmt = db.prepare('INSERT INTO userinfo (username, password) VALUES (?, ?)')
+    const info = stmt.run(data.user, data.pass)
+    res.status(200).json(info)
+});
+
+// READ a list of users (HTTP method GET) at endpoint /app/users/
+app.get("/app/users", (req, res) => {	
+    try {
+        const stmt = db.prepare('SELECT * FROM userinfo').all()
+        res.status(200).json(stmt)
+    } catch {
+        console.error(e)
+    }
+});
+
+// READ a single user (HTTP method GET) at endpoint /app/user/:id
+app.get("/app/user/:id", (req, res) => {
+    try {
+        const stmt = db.prepare('SELECT * FROM userinfo WHERE id = ?').get(req.params.id);
+        res.status(200).json(stmt)
+    } catch (e) {
+        console.error(e)
+    }
+
+});
+
+// UPDATE a single user (HTTP method PATCH) at endpoint /app/update/user/:id
+app.patch("/app/update/user/:id", (req, res) => {
+    let data = {
+        user: req.body.username,
+        pass: req.body.password
+    }
+    const stmt = db.prepare('UPDATE userinfo SET username = COALESCE(?,username), password = COALESCE(?,password) WHERE id = ?')
+    const info = stmt.run(data.user, data.pass, req.params.id)
+    res.status(200).json(info)
+});
+
+// DELETE a single user (HTTP method DELETE) at endpoint /app/delete/user/:id
+app.delete("/app/delete/user/:id", (req, res) => {
+    const stmt = db.prepare('DELETE FROM userinfo WHERE id = ?')
+    const info = stmt.run(req.params.id)
+    res.status(200).json(info)
+});
+
+//// Default response for any request not addressed by the defined endpoints ////
+app.use(function(req, res){
+	res.json({"message": "Endpoint not found. (404)"});
+    res.status(HTTP_STATUS_NOT_FOUND);
+});
+
+process.on('SIGTERM', () => {
+    server.close(() => {
+        console.log('Server stopped')
+    })
 })
