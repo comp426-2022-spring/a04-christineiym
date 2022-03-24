@@ -9,10 +9,6 @@ const CONTENT_TYPE_TEXT_PLAIN = 'text/plain'
 const HEADS = 'heads'
 const TAILS = 'tails'
 
-// Create Require
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url)
-
 // Require minimist module to process arguments.
 const minimist = require('minimist')
 const { exit } = require('process')
@@ -42,7 +38,7 @@ if (allArguments['help']) {
 const port = allArguments['port'] || process.env.PORT || DEFAULT_PORT
 
 // Import the coinFlips and countFlips functions from your coin.mjs file
-import { coinFlip, coinFlips, countFlips, flipACoin } from './coin.mjs'
+const coin = require('./coin.js')
 
 // Require Express.js
 const express = require('express')
@@ -66,7 +62,7 @@ app.get('/app/', (req, res) => {
 
 // One flip
 app.get('/app/flip', (req, res) => {
-    var flip = coinFlip()
+    var flip = coin.coinFlip()
     res.status(HTTP_STATUS_OK).json({
         'flip': flip
     })
@@ -74,8 +70,8 @@ app.get('/app/flip', (req, res) => {
 
 // Multiple flips
 app.get('/app/flips/:number', (req, res) => {
-    var coinFlipsResult = coinFlips(req.params.number)
-    var coinFlipsResultSummary = countFlips(coinFlipsResult)
+    var coinFlipsResult = coin.coinFlips(req.params.number)
+    var coinFlipsResultSummary = coin.countFlips(coinFlipsResult)
 
     res.status(HTTP_STATUS_OK).json({
         'raw': coinFlipsResult,
@@ -85,12 +81,12 @@ app.get('/app/flips/:number', (req, res) => {
 
 // Flip match against heads
 app.get('/app/flip/call/heads', (req, res) => {
-    res.status(HTTP_STATUS_OK).json(flipACoin(HEADS))
+    res.status(HTTP_STATUS_OK).json(coin.flipACoin(HEADS))
 })
 
 // Flip match against tails
 app.get('/app/flip/call/tails', (req, res) => {
-    res.status(HTTP_STATUS_OK).json(flipACoin(TAILS))
+    res.status(HTTP_STATUS_OK).json(coin.flipACoin(TAILS))
 })
 
 // Default response for any request not addressed by the defined endpoints

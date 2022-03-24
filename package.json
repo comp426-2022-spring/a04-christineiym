@@ -1,7 +1,6 @@
 {
   "name": "a04-christineiym",
   "version": "1.0.0",
-  "type": "module",
   "description": "Build an API for coin-flipping and recording access logs and test errors.",
   "main": "server.js",
   "scripts": {
