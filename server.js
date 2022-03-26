@@ -1,5 +1,3 @@
-// TODO: Create endpoints, Create an access log file
-
 /***** Creating the server *****/
 // Define named constants
 const START_ARG_NUM = 2
@@ -162,6 +160,8 @@ app.use(function (req, res) {
     res.status(HTTP_STATUS_NOT_FOUND);
 });
 
+
+/***** Closing server *****/
 process.on('SIGTERM', () => {
     server.close(() => {
         console.log('Server stopped')
