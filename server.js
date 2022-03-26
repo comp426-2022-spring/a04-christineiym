@@ -59,17 +59,17 @@ app.use(express.json());
 // Logging middleware
 app.use((req, res, next) => {
     let logdata = {
-        remoteaddr: req.ip,
-        remoteuser: req.user,
-        time: Date.now(),
-        method: req.method,
-        url: req.url,
-        protocol: req.protocol,
-        httpversion: req.httpVersion,
-        secure: req.secure,
-        status: res.statusCode,
-        referer: req.headers['referer'],
-        useragent: req.headers['user-agent']
+        remoteaddr: req.ip ?? null,
+        remoteuser: req.user ?? null,
+        time: Date.now() ?? null,
+        method: req.method ?? null,
+        url: req.url ?? null,
+        protocol: req.protocol ?? null,
+        httpversion: req.httpVersion ?? null,
+        secure: req.secure.toString() ?? null, // is this ok?
+        status: res.statusCode ?? null,
+        referer: req.headers['referer'] ?? null,
+        useragent: req.headers['user-agent'] ?? null
     }
 
     const stmt = db.prepare(`INSERT INTO accesslogs (remoteaddr, remoteuser, time, 
