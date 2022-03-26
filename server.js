@@ -1,3 +1,5 @@
+// TODO: Create endpoints, Create an access log file
+
 /***** Creating the server *****/
 // Define named constants
 const START_ARG_NUM = 2
@@ -121,6 +123,25 @@ app.get('/app/flip/call/heads', (req, res) => {
 app.get('/app/flip/call/tails', (req, res) => {
     res.status(HTTP_STATUS_OK).json(coin.flipACoin(TAILS))
 })
+
+//// Logging, if debug is true ////
+if (allArguments['debug'] == 'true') {
+    // READ a list of access log records (HTTP method GET) at endpoint /app/log/access
+    app.get("/app/log/access", (req, res) => {
+        try {
+            const stmt = db.prepare('SELECT * FROM accesslogs').all()
+            res.status(HTTP_STATUS_OK).json(stmt)
+        } catch {
+            console.error(e)
+        }
+    });
+
+    // Error test (taken with modification from thi link:
+    // http://expressjs.com/en/guide/error-handling.html)
+    app.get('/app/error', (req, res) => {
+        throw new Error('Error test successful.') // Express will catch this on its own.
+    })
+}
 
 //// Default response for any request not addressed by the defined endpoints ////
 app.use(function (req, res) {
