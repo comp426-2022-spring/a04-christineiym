@@ -82,7 +82,7 @@ app.use((req, res, next) => {
 })
 
 // Additional (combined format) logging middleware, if log is true
-if (allArguments['log'] == 'true') {
+if (allArguments['log'] == true) {
     // Require the fs and morgan modules
     const fs = require('fs') // TODO: should I put this at the top?
     const morgan = require('morgan')
@@ -136,7 +136,7 @@ app.get('/app/flip/call/tails', (req, res) => {
 })
 
 //// Logging and error testing, if debug is true ////
-if (allArguments['debug'] == 'true') {
+if (allArguments['debug'] == true) {
     // READ a list of access log records (HTTP method GET) at endpoint /app/log/access
     app.get("/app/log/access", (req, res) => {
         try {
